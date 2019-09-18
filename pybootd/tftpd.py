@@ -30,6 +30,7 @@ from urllib.parse import urlparse, urlsplit
 from urllib.request import urlopen
 from . import pybootd_path
 from .util import hexline
+import numpy as np 
 
 #pylint: disable-msg=broad-except
 #pylint: disable-msg=invalid-name
@@ -71,7 +72,7 @@ class TftpConnection(object):
         self.client_addr = None
         self.sock = None
         self.active = 0  # 0: inactive, 1: active
-        self.blockNumber = 0
+        self.blockNumber = np.int16(0x0000)
         self.lastpkt = ''
         self.mode = ''
         self.filename = ''
@@ -263,7 +264,7 @@ class TftpConnection(object):
         if not self.time:
             self.time = now()
         blocksize = self.blocksize
-        block = self.blockNumber = self.blockNumber + 1
+        block = self.blockNumber = np.int16(self.blockNumber + 1)
         lendata = len(data)
         fmt = '!hh%ds' % lendata
         pkt = pack(fmt, self.DATA, block, data)
