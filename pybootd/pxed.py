@@ -312,34 +312,35 @@ class BootpServer:
                 continue
             dhcp_tags[tag] = value
 
-    def build_pxe_options(self, options, server):
-        buf = b''
-        try:
-            uuid = options[97]
-            buf += spack('!BB%ds' % len(uuid),
-                         97, len(uuid), uuid)
-            clientclass = options[60]
-            clientclass = clientclass[:clientclass.find(':')]
-            buf += spack('!BB%ds' % len(clientclass),
-                         60, len(clientclass), clientclass)
-            vendor = ''
-            vendor += spack('!BBB', PXE_DISCOVERY_CONTROL, 1, 0x0A)
-            vendor += spack('!BBHB4s', PXE_BOOT_SERVERS, 2+1+4,
-                            0, 1, server)
-            srvstr = 'Python'
-            vendor += spack('!BBHB%ds' % len(srvstr), PXE_BOOT_MENU,
-                            2+1+len(srvstr), 0, len(srvstr), srvstr)
-            prompt = 'Stupid PXE'
-            vendor += spack('!BBB%ds' % len(prompt), PXE_MENU_PROMPT,
-                            1+len(prompt), len(prompt), prompt)
-            buf += spack('!BB%ds' % len(vendor), 43,
-                         len(vendor), vendor)
-            buf += spack('!BBB', 255, 0, 0)
-            return buf
-        except KeyError as exc:
-            self.log.error('Missing options, cancelling: %s' % exc)
-            return b''
-
+def build_pxe_options(self, options, server):                                                                                                                                                                  
+         buf = b''                                                                                                                                                                                                  
+         try:                                                                                                                                                                                                       
+             uuid = options[97]                                                                                                                                                                                     
+             buf += spack('!BB%ds' % len(uuid),                                                                                                                                                                     
+                          97, len(uuid), uuid)                                                                                                                                                                      
+             clientclass = options[60]                                                                                                                                                                              
+             #clientclass = clientclass[:clientclass.find(':')]                                                                                                                                                     
+             clientclass = clientclass[:clientclass.find(b':')]                                                                                                                                                     
+             buf += spack('!BB%ds' % len(clientclass),                                                                                                                                                              
+                          60, len(clientclass), clientclass)                                                                                                                                                        
+             vendor = ''                                                                                                                                                                                            
+             vendor += spack('!BBB', PXE_DISCOVERY_CONTROL, 1, 0x0a).decode("utf-8")                                                                                                                                
+             vendor += spack('!BBHB4s', PXE_BOOT_SERVERS, 2+1+4,                                                                                                                                                    
+                             0, 1, server).decode("utf-8")                                                                                                                                                          
+             srvstr = b'Python'                                                                                                                                                                                     
+             vendor += spack('!BBHB%ds' % len(srvstr), PXE_BOOT_MENU,                                                                                                                                               
+                             2+1+len(srvstr), 0, len(srvstr), srvstr).decode("utf-8")                                                                                                                               
+             prompt = b'Stupid PXE'                                                                                                                                                                                 
+             vendor += spack('!BBB%ds' % len(prompt), PXE_MENU_PROMPT,                                                                                                                                              
+                             1+len(prompt), len(prompt), prompt).decode("utf-8")                                                                                                                                    
+             buf += spack('!BB%ds' % len(vendor), 43,                                                                                                                                                               
+                          len(vendor), vendor.encode("utf-8"))                                                                                                                                                      
+             buf += spack('!BBB', 255, 0, 0)                                                                                                                                                                        
+             return buf                                                                                                                                                                                             
+         except KeyError as exc:                                                                                                                                                                                    
+             self.log.error('Missing options, cancelling: %s' % exc)                                                                                                                                                
+             return b''                        
+            
     def build_dhcp_options(self, clientname):
         if not clientname:
             return b''
